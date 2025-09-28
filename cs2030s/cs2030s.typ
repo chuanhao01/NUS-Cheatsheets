@@ -18,7 +18,12 @@
   num-columns: 4,
   column-gutter: 4pt,
 )
-#figure(caption: [#hands.folded])[#image("copyright/adi-yoga.jpg", width: 80%, alt: "Copyright sorry")]
+// If from GH, you need to find and add the picture yourself
+#figure(caption: [#hands.folded])[#image(
+  "copyright/adi-yoga.jpg",
+  width: 80%,
+  alt: "Copyrighted, please find it on canvas youself if you want the picture here. :p",
+)]
 
 
 = Week 1
