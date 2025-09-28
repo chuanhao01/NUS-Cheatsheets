@@ -1,5 +1,6 @@
-#import "@preview/fletcher:0.5.8" as fletcher: diagram, node, edge
+#import "@preview/fletcher:0.5.8" as fletcher: diagram, edge, node
 #import "lib.typ": *
+#import emoji: hands
 
 #set page(paper: "a4", flipped: true, margin: 1cm)
 #set text(font: "New Computer Modern", size: 11pt)
@@ -18,6 +19,8 @@
   num-columns: 6,
   column-gutter: 4pt,
 )
+#figure(caption: [#hands.folded])[#image("copyright/adi-yoga.jpg", width: 80%, alt: "Copyright sorry")]
+
 
 = Week 1
 
@@ -387,7 +390,7 @@ void foo(){
 ```
 
 === Exception shenanigans
-Catching a supertype will not allow you to catch a subtype after.
+Catching a supertype will not allow you to catch a #emph[subtype] after.
 ```Java
 // EB <: EA
 catch (EA e) {
@@ -398,6 +401,18 @@ catch (EB e) {
 } catch(EA e) {
 }
 ```
+Overriding a method does not allow you to throw a #emph[supertype] exception.
+```Java
+// EA <: Exception
+class A {
+  public void food() throws EA {}
+}
+class B extends A {
+  // Compile error
+  public void foo() throws Exception {}
+}
+```
+
 
 = Week 5, Generics
 Generics are #strong[invariant]
@@ -539,7 +554,7 @@ Advantages:
 
 = Stack and Heap diagram
 
-#image("stack_and_heap.svg", format: "svg"),
+#image("stack_and_heap.png"),
 
 = Java Code
 ```Java
