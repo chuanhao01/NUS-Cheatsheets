@@ -5,8 +5,9 @@
   write-title: false,
   font-size: 5.5pt,
   line-skip: 5.5pt,
-  x-margin: 30pt,
-  y-margin: 0pt,
+  // Use (x: ..., y: ...) to set more custom margins
+  // Auto should allow for printing without any changes
+  margin: auto,
   num-columns: 5,
   column-gutter: 4pt,
   numbered-units: false,
@@ -28,7 +29,7 @@
 
     set page(paper: "a4",
              flipped: true,
-             margin: (x: x-margin, y: y-margin))
+             margin: margin)
 
     set text(size: font-size)
 
@@ -40,14 +41,14 @@
       let hue = color-index.at(calc.rem(index - 1, color-index.len()))
       let color = hue.darken(8% * (it.depth - 1))
 
-      set text(white, size: font-size)
+      set text(black, size: font-size)
       block(
         radius: 1.0mm,
         inset: 1.0mm,
-        width: 90%,
+        width: 100%,
         above: line-skip,
         below: line-skip,
-        fill: color,
+        stroke: color,
         it
       )
     }

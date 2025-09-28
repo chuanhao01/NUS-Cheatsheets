@@ -12,11 +12,10 @@
   title: "CS2030S",
   authors: "chuanhao01",
   write-title: true,
-  font-size: 5pt,
+  font-size: 7pt,
   line-skip: 1.5pt,
-  x-margin: 0.1in,
-  y-margin: 0.1in,
-  num-columns: 6,
+  margin: (x: 0.4in, y: 0.4in),
+  num-columns: 4,
   column-gutter: 4pt,
 )
 #figure(caption: [#hands.folded])[#image("copyright/adi-yoga.jpg", width: 80%, alt: "Copyright sorry")]
@@ -24,7 +23,8 @@
 
 = Week 1
 
-Java is a #strong[statically] and #strong[strongly] typed language
+Java is a #strong[statically] and #strong[strongly] typed language\
+#jstr(body: "null") is a subtype of all reference types(Everything but primitives like #jstr(body: "int"))
 
 == Subtypes
 
@@ -33,8 +33,9 @@ $S$ is a #emph[subtype] of $T$, $T$ is a #emph[supertype] of $S$\
 #strong[Reflexive:] $S<:S$\
 #strong[Transitive:] $S<:T and T<:U -> S<:U$\
 #strong[Anti-Symmetry:] $S<:T and T<:S -> S=T$ i.e. $S$ and $T$ has to be the same type\
-Any #emph[supertype] can hold a #emph[subtype], ```Java S s; T t = s```\
-Any function expecting a #emph[supertype] can take in a #emph[subtype], ```Java void foo(T t); foo(s)```
+Any #emph[supertype] can hold a #emph[subtype], ```Java S s = new S(); T t = s```\
+Any function expecting a #emph[supertype] can take in a #emph[subtype], ```Java void foo(T t); foo(s)```\
+Any function returning a #emph[supertype] can also return a #emph[subtype], ```Java T foo() {return new S();}```
 
 
 == Primitive Types
@@ -115,36 +116,43 @@ class A {
 // foo(int, double) -> signature
 int foo(int a, double b){}
 ```
-#jstr(body: "@Override") is an annotation that tells the compiler a #emph[method] is intended to override another #emph[method].
+#jstr(body: "@Override") is an annotation that tells the compiler a #emph[method] is intended to override another #emph[method].\
+With the #jstr(body: "@Override") annotation the #emph[method descriptor] has to be the same, if not it will throw a compiler error.\
+Without the #jstr(body: "@Override"), it can still override.
 It is not required for a #emph[method] to be #emph[overriden]\
+If #jstr(body: "@Override") is applied to a method it has to #emph[override] properly.
+This means
 
 ```Java
 class A {
   public void foo(int x){}
 }
 class B {
-  public void foo(int y){} // Overrides by Overloading
+  public void foo(int y){} // Overrides
   @Override
   public void foo(int y){} // Overrides
-  public void foo() {} // Overload
-  public void foo(int y) // Fails without @Override
+  public void foo() {} // Overloads
   @Override
-  public void foo(){ // Fails with @Override
+  public void foo() {} // Fails with @Override
 }
 ```
 
 === Override shenanigans
-If #jstr(body: "@Override") is applied to a method it has to #emph[override] properly.
-This means the #emph[method descriptor] has to be the same, if not it is #emph[overloading].
 
-Without #jstr(body: "@Override"), for the method to override, by #strong[LSP] (or smth), there is this case.
+Given the #emph[method signature] is the same, java allows some tomfoolery.\
+Your method #strong[access modifiers] (#jstr(body: "public")) and #strong[return type] can change #strong[only] to #strong[subtypes].\
+#strong[Access Modifiers: ] #jstr(body: "public") <: default (nothing in the field) <: #jstr(body: "private")\
+#strong[Return type: ] only applies for created types(#jstr(body: "class"), #jstr(body: "interface")) and not primitive types(#jstr(body: "int") etc.).
+All the examples below work with or without the #jstr(body: "@Override") annocation.
+
 ```Java
-// B <: A
-class X {public A foo()}
-class Y extends X {public B foo()}
-// Y: B foo() overrides X: A foo()
+// A <: Integer <: Number
+class X {private Number foo()}
+class Y extends X {Integer foo()} // Override Ok
+class Z extends Y {public A foo()} // Override Ok
+Z z = new Z();
+Number n = z.foo() // Calls Z.foo, not the others
 ```
-This only applies for created types(#jstr(body: "class"), #jstr(body: "interface")) and not primitive types(#jstr(body: "int") etc.).
 
 
 == Compile-Time and Runtime Types
@@ -315,6 +323,14 @@ The boxing and unboxing operation is performance intensive.
 Integer a = 4; // Auto-boxing
 int b = a; // Auto unboxing
 ```
+
+=== Java Wrapper classes
+
+#jstr(body: "Integer") <: #jstr(body: "Number"), #jstr(body: "Double") <: #jstr(body: "Number")\
+#jstr(body: "Long") <: #jstr(body: "Number"), #jstr(body: "Float") <: #jstr(body: "Number")\
+#jstr(body: "Number") <: #jstr(body: "Object")\
+#jstr(body: "Integer"), #jstr(body: "Double"), #jstr(body: "Long"), #jstr(body: "Float") all #jstr(body: "implements Comparable<T>")
+
 
 == Variance
 #strong[covariant: ] $S<:T -> C(S)<:C(T)$\
