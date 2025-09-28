@@ -561,7 +561,7 @@ Advantages:
 A[] a = new A[int size];
 A[] a = new A[]{new A(), ...}
 
-// Object overides
+// Object overrides
 @Override
 public String toString() {}
 @Override
