@@ -71,6 +71,13 @@ Circle c1 = new Circle(); // x and y default to 0
   Tells to do X by #jstr(body: "super.equals(b)") etc.\
 ]
 #strong[Information Hiding:] Keep fields hidden with #jstr(body: "private") if other #emph[objects] don't need access to them (by default)
+#list[
+  Not declared with private
+][
+  Accessable outside the X class
+][
+  Possible to chnage values directly (Mention method in example)
+]
 
 == private
 #jstr(body: "private") fields can only be accessed within the same #jstr(body: "class")
@@ -204,7 +211,14 @@ a = (A) b; // Ok, type-cast not needed
 To check compilation, remember type widening and narrowing.
 
 === Type Casting shenanigans
-Also for #jstr(body: "interface"), it can always be cast into any other #jstr(body: "interface"), since a potential #emph[subtype] could implement both the #jstr(body: "interface").
+Any #emph[type] can be casted into an #jstr(body: "interface"). \
+You can explicitly type cast a #emph[supertype] to a #emph[subtype] (type narrowing).
+```Java
+class A {}; class D extends A {}
+interface B {}; interface D {}
+D d = (D) new A (); // Type narrowing
+B b = (B) new A(); // Type cast interface
+```
 
 == Method Overloading
 
@@ -249,11 +263,11 @@ foo(B, B)
 
 Shorter interface example
 ```Java
-interface I1
-interface I2
-class A implements T1, T2
-void f(T1 x){}
-void f(T2 x){}
+interface I1 {}
+interface I2 {}
+class A implements I1, I2 {}
+void f(I1 x){...}
+void f(I2 x){...}
 f(new A());
 ```
 
@@ -527,6 +541,21 @@ I i = foo(new Seq<G>(100));
 // Seq<G> with Seq<? extends T> is Argument Typing
 ```
 
+=== Thinking
+#strong[Argument Typing: ] T will be a supertype of it
+T has to be at most A.
+```Java
+foo(T a){...}
+foo(new A()); // A <: T
+```
+
+#strong[Target Typing: ] T will be a subtype of it.
+T has to be atleast A
+```Java
+T foo(){...}
+A a = foo(); // T <: A
+```
+
 === Picking T
 #list[
   Pick the most specific
@@ -573,6 +602,62 @@ Advantages:
   Enable safe sharing of internals
 ]
 
+= Last Minute
+#list[
+  Check implementation when inheriting from #jstr(body: "abstract") or #jstr(body: "interface")
+][
+  Reason for allowing override (exception), override allows throwing for subtype or same exception (reapeat for return type too)
+]
+
+== Interface and Abstract
+
+Any abstract method in a #jstr(body: "interface") or #jstr(body: "abstract class") has to be implemented if inherited.
+#jstr(body: "abstract") methods cannot have implementation.
+
+#jstr(body: "interface") does not allow any concrete methods.
+Methods in #jstr(body: "interface") are #jstr(body: "public abstract") by default. (Only #jstr(body: "interface"))
+So any class that inherits it and implements the method needs to be #jstr(body: "public").
+```Java
+interface B{
+  // Same as public abstract void foo() {}
+  void foo();
+}
+class A implements B {
+  public void foo() {...}
+  void foo() {...} // Fails because no public
+  // Fails if public void foo is not implemented
+}
+```
+
+For #jstr(body: "abstract class"), if a method has no implementation, it has to have #jstr(body: "abstract").
+For #jstr(body: "abstract class"), if a method is #jstr(body: "abstract") it can either be #strong[public] or #strong[default (nothing)].
+#strong[default] allows for both #strong[default] and #strong[public].
+```Java
+abstract class A {
+  abstract void foo1();
+  public abstract void foo2();
+}
+class B extends class A {
+  // Fails if don't implement all abstract methods
+  void foo1() {...}; public foo1() {...} // Either one is ok
+  public void foo2() {...}
+  void foo2() {...} // Causes a compile error
+}
+```
+
+== Dynamic Binding
+
+At #strong[CTT] save the most specific #emph[method signature] (name and params types).
+```Java
+// Y <: X, X x = new Y();
+x.foo("abc", "abc"); // This saves foo(String, String), look at CTT
+// Can match Y.foo(String, String) at RTT
+```
+
+At #strong[RTT], go through all methods and find 1 that matches.
+
+Implementation of #jstr(body: "abstract") methods can be done by any #emph[supertype] (I think, based on JJK paper).
+
 = Stack and Heap diagram
 
 #image("stack_and_heap.png"),
@@ -594,4 +679,11 @@ public int compareTo(T o) {}
 
 // String format
 String.format("%s %d", s, d);
+
+// Multiple implements
+interface A {}; interface B {}
+class C {}
+class D extends C implements A, B {}
+// First extends for type has to be class (if any)
+class E<T extends C & A & B, U> {}
 ```
