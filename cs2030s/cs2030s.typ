@@ -1,4 +1,3 @@
-#import "@preview/fletcher:0.5.8" as fletcher: diagram, edge, node
 #import "lib.typ": *
 #import emoji: hands
 
@@ -666,6 +665,7 @@ Implementation of #jstr(body: "abstract") methods can be done by any #emph[super
 ```Java
 A[] a = new A[int size];
 A[] a = new A[]{new A(), ...}
+a.length // gets the size of the array
 
 // Object overrides
 @Override
@@ -676,9 +676,11 @@ public boolean equals(Object o) {}
 // Comparable<T>
 @Override
 public int compareTo(T o) {}
+// this: -1 less than, 0 equal, 1 more than
 
 // String format
 String.format("%s %d", s, d);
+String.format("%b %c %f %.2f %t", boolean, char, float, float, Date)
 
 // Multiple implements
 interface A {}; interface B {}
@@ -686,4 +688,19 @@ class C {}
 class D extends C implements A, B {}
 // First extends for type has to be class (if any)
 class E<T extends C & A & B, U> {}
+
+// Use
+a instanceof A<?>
+// instead of raw types
+a instanceof A
+// Use
+new Comparable<?>[10];
+// instead of raw types
+new Comparable[10]
+
+// Use
+@SuppressWarnings("unchecked")
+T[] = (T[]) new Object[]
+@SuppressWarnings("unchecked")
+Pair<T>[] students = (Pair<T>[]) new Pair<?>[size];
 ```
