@@ -39,6 +39,9 @@ Invariants:
 #strong[Time Complexity]:
 Should be $O(n)$ since in the upper bound, we iterate through all elements in the array for the comparisons.
 
+#strong[Space complexity]: $O(1)$.
+It's done in place
+
 == Insertion Sort
 
 Invariants:
@@ -57,6 +60,7 @@ Upper bounded by worse case, every new element has to be checked and shifted bac
 Since no extra space is needed, besides a few known variables to keep track of the indexes.
 
 #strong[Stability]: Stable.
+Because we never change the relative ordering of equal items, only ever shifting smaller items to the left.
 
 == Selection Sort
 
@@ -75,7 +79,10 @@ This is because to find the minimum at each i, we need to look through $n-i$, le
 Since we only need some known number of variables and we don't create any extra space.
 We also swap the elements to move them into place.
 
-It is #strong[not stable]
+#strong[Stability]: Not Stable.
+There's no guarantee on the order of equal items at any swap. We could swap $[5_a .. 5_b ..]$ to $[.. 5_b 5_a ..]$.
+To make it stable, we could shift the min of the `right` arr left instead of just making 1 swap.
+We do at most $O(2n)$ operation per element $n$ times, so its still $O(n^2)$
 
 == Mergesort
 
@@ -87,16 +94,17 @@ Invariants
 - Given 2 sorted sub lists we need to merge them back into 1 list (Merge step)
 - Base case will always return a sorted list
 
-Time Complexity: $O(n log n)$
+#strong[Time Complexity]: $O(n log n)$
 Since we are spliting the array into halves each time, we would have $O(log n)$ splits.
 At each level, we would have to iterate through all elements in the array $O(n)$ to run the merge step for each sub array in the step.
 Thus $O(n)$
 
-Space Complexity: $O(n)$
+#strong[Space Complexity]: $O(n)$
 At any point, we would have to create an extra array of $O(n)$ in the worst case.
 We also have the recursive stack calls of $O(log n)$
 
-It is #strong[stable]
+#strong[Stability]: Stable.
+Since equal items maintain their relative ordering during the merge step. (I.e. Take from left before right, and we split left before right, [.., 1, 1 ..])
 
 == Quicksort
 
@@ -107,14 +115,30 @@ The sub arrays should be returned as sorted and by placing the left sub-arary, p
 To sort within the sub arrays, we pick a pivot point and create the left and right sub-arrays, with left, pivot, right split.
 This is also all done in place.
 
-Time Compleixty: $O(n^2)$ - Expected and worse case
+#strong[Time Compleixty]: $O(n^2)$ - Expected and worse case
 Since we cannot guarantee the partition index, we could only parition 1 item at each recursive call leading to the recurrance formula as: $T(n) = T(n-1) + O(n)$.
 This solves to $O(n^2)$
 
-Space Compleixty: $O(n)$
+#strong[Space Compleixty]: $O(n)$
 We need to maintain a recursive call stack for $O(n)$ calls down.
 
-This is #strong[not stable] due to partition
+#strong[Stability]: Not Stable.
+This is due to the partition algo not being stable as there is no guarantee on the order for where equal items are placed.
+We can make it stable by augmenting each element in the array to be a pair (arr[i], i).
+When we encounter any element in the array that is equal, we can compare them by their index to see if it should be in the left or right sub-arrray.
+
+=== Paranoid Quicksort
+
+Assuming we can always partition the array into $1/3$ and $2/3$ with a randomized parittion,
+
+#strong[Time Compleixty (Expected)]: $O(n log n)$.
+This is because we now have $O(log_(3/2) n)$ levels with $O(n)$ work at each level.
+
+#strong[Space Compleixty (Expected)]: $O(log n)$.
+Since we only ever make $O(log n)$ recursive calls.
+
+#strong[Note]:
+The worse case runtime of this could be infinite since we may never find a pivot.
 
 === Quickselect
 
@@ -127,26 +151,34 @@ This gives us the gp, $sum_(0)^(log_(3/2) n) (2/3)^i n$ giving $O(n)$
 
 == BST
 
+Without any augmentations or additional constraints.
+For any node, nodes in left, $< "key"$ and nodes in right, $> "key"$
+For duplicates, assign either $<=$ or $>=$
+
 Operations
 - Insert, Delete, Lookup
 
-Without augmentation:
-- Searching O(h): given a target, check current node’s key against target
-- Inserting O(h): given a target, search for the immediate parent and add to the left/right depending on the target value (only add when corresponding child does not exist yet)
-- Successor O(h): find node first
+Lookup:
+#strong[TC]: $O(n)$
+Traverse the tree, with 4 cases, if equal we found the node, else in left, else in right, else if null node does not exists.
+
+Insert:
+#strong[TC]: $O(n)$
+Traverse the tree, until we get a null node, then create and return the node.
+
+Deletion:
+#strong[TC]: $O(n)$
 Deletion O(h):
 1. Case 1 (leaf): delete
 2. Case 2 (1 child): delete node and attach child to deleted node’s parent
-3. Case 3 (2 childs): find successor of node to delete, swap the successor with
-the node to delete, delete the node (now leaf)
+3. Case 3 (2 childs): find successor of node to delete, swap the successor with the node to delete, delete the node (now leaf)
+  - Largest node in left s.t. (predecessor) or Smallest node in right s.t. (successor)
 
 Tree traversals O(n):
 1. Pre-order: self, left, right
 2. In-order: left, self, right
 3. Post-order: left, right, self
 4. Level-order: level by level
-
-largest node in left st (predecessor) or smallest node in right st (successor)
 
 == BST AVL variant
 
@@ -174,9 +206,7 @@ $
 We can rearrange it to show that with $n = 2^(h/2) => 2log n = h => h = O(log n)$.
 This means we needs at least $O(log n)$ nodes to create a AVL BST with height $h$.
 
-=== Data
-
-==== Size
+=== Size
 We want to add a size property to every node, so that getting the size of the tree root at `node` is $O(1)$.
 We do this by:
 - Every time we create a node, it has size `1` by default
@@ -197,9 +227,7 @@ We maintain this invariant with the insert and delete operations as such:
 Take note, when this update operation runs, it may or may not update the height.
 (We could get a case we the tree left and right height is different, $h_x$ and $h_x + 1$, inserting into the $h_x$ tree does not change the height of the tree)
 
-=== Operations
-
-==== Rank
+=== Rank
 
 The main idea is to count the number of nodes smaller than you if we find the node.
 Function signature looks like `rank(key)`.
@@ -210,13 +238,13 @@ To search,
 - If `key < root.key` it means our node is in the left sub-tree, recurse into the left sub-tree
 - If `key == root.key` we have found our node, return `root.left.size` (Base Case no node, it has rank 0)
 - If `key > root.key` we have all the node in the `root.left.size` and `root` itself smaller than the node we are looking for.
-  - Hence we return the recursed call in `root.right` + `root.left.size` + $1$
+  - Hence we return the recursed call in `rank(root.right)` + `root.left.size` + $1$
 
-Time Complexity:
+#strong[Time Complexity]:
 Assuming the other invariants we have later, this should run in $O(h) = O(log n)$ as we would only ever traverse the height of the tree before finding or not finding our node.
 Also we are able to query the size of the node in $O(1)$ time.
 
-Space Complexity:
+#strong[Space Complexity]:
 Worse case we need to keep track of $O(h) = O(log n)$ recursive calls on the call stack.
 
 === Select
@@ -227,33 +255,55 @@ Similar to above, we search through the BST and if we do not find the element, w
 The idea is the left sub-tree contains the $n$ smaller items, meaning the current rooted node is rank `root.left.size`.
 We have 3 cases:
 - $"root.left.size" == "rank"$ in which case return the `root` node
-- $"root.left.size" < "rank"$, the node with our rank is larger than everything in the left sub-tree and the root node, hence we recurse in the right sub-tree with `select(root.right, rank - root.left.size - 1)`
+- $"root.left.size" < "rank"$, the node with our rank is larger than everything in the left sub-tree and the root node, hence we recurse in the right sub-tree with `select(root.right, rank - root.left.size - 1)`. b/c We want to remove all nodes in left subtree and the current node.
 - $"root.left.size" > "rank"$, the node with the rank we are looking for is in the left sub-tree, hence we recurse with `select(root.left, rank)`
 
-Also note the base case, if there is no nodes in the left sub-tree, it should return a `size` of 1.
+// Also note the base case, if there is no nodes in the left sub-tree, it should return a `size` of 1.
 We are also only able to look for a rank if its within $0 <= "rank" <= "root.size" - 1 < "root.size"$
 
-Time Complexity:
+#strong[Time Complexity]:
 Should be $O(h) = O(log n)$ since we only ever iterate through the height of tree.
 
 #image("assets/avl.png", width: 100%)
 
-#colbreak()
-
-== Code
-
-#image("assets/sort-code1.png", width: 85%)
-#image("assets/sort-code2.png", width: 85%)
-#image("assets/sort-code3.png", width: 85%)
+// == Code
+// #image("assets/sort-code1.png", width: 85%)
+// #image("assets/sort-code2.png", width: 85%)
+// #image("assets/sort-code3.png", width: 85%)
 
 = AB Tree
 
-#image("assets/AB-tree.png", width: 100%)
-#image("assets/AB-tree2.png", width: 100%)
+#image("assets/AB-Tree1.png", width: 100%)
+#image("assets/AB-Tree2.png", width: 100%)
+
+Idea is to combine cache locality with $log$ height.
+
+== Operations
+
+Search - Normal traversal
+
+Insert:
+At leaft nodes, if it's too full, split it, offering 1 node to the parent.
+Recurse up the tree until the parent node is not full.
+Idea is to always start at the leaf node and propagate up.
+
+Delete (Not as detailed, need more steps and edge cases):
+At left node, delete and try to merge with neighbouring leaf nodes.
+If its too full split again, and also take note to pull from parent.
+For internal nodes, swap with a predecessor then delete leaf node.
 
 = Merkle Tree
 
 #image("assets/merkle-tree.png", width: 90%)
+
+= Tries
+
+We break up strings into its chars, with each char being a node.
+Each node can also have 26 children, for each alphabet.
+When we reach the end of the string node, we mark a flag to know that this is the end of a string.
+We can also augment it to store a count of the number of strings.
+
+For example if it stores a `count` and `sumCount`, we can do `rank` and find the number of strings inserted that are less than a str `s`, by summing all the `sumCount` of any smaller strings.
 
 = Heap
 ```
@@ -283,7 +333,7 @@ Bubble down, from a node, swap with minimum of your child, until you are smaller
 
 #image("assets/heap.png", width: 30%)
 
-== Hashing
+= Hashing
 
 Collisions: two distinct keys produce the same hash function (unavoidable)
 
@@ -317,8 +367,8 @@ Implementation of the hash table also depends on the collision resolution algori
 == Chaining
 
 Each bucket contains a linked list of items for all items with same hash
-• Total space: O(m + n) where m is the number of buckets and n is the number of entries
-• Must store both the key and the value to identify when searching
+- Total space: O(m + n) where m is the number of buckets and n is the number of entries
+- Must store both the key and the value to identify when searching (since if 2 keys hash to the same value, we need the key to know which value to act on the chain at that index)
 
 - *Lookup*:
   - Worst-Case: $O(n)$
@@ -335,7 +385,196 @@ Each bucket contains a linked list of items for all items with same hash
 Open addressing: If idx already occupied, try next slot until empty found. \
 Delete - when deleting item at idx, see if any item after it has hash value <= idx, and put that item into idx… repeat
 
-== Binary Search
+== Problem Solving
+
+- Frequency Vector to counts no. of occurances
+- We can also hash the frequency vector making sure to check #strong[TC]
+- Don't use a Direct Access Table(DAT)/array unless you can bound the size and #strong[TC]
+
+= Graph
+
+- Our nodes are labelled $0..n-1$ for n nodes.
+- Are simple graphs unless otherwise stated.
+- $V$ for no. vertex/node and $E$ for no. edges
+- We think of undirected edges as having `(i, j)` and `(j, i)` edge
+
+Extra:
+- Creating layers of the same graph to encode a dimension of states
+- Duplicate nodes (with `node'`) and moving edges around to encode states of the node itself
+- In a connected graph, the longest path between any 2 points can have at most $V-1$ edges, if not it would have a shorter path
+
+== Edges
+
+Operations:
+- `is_adj(i, j)` - If there is an edge from node `i` to `j` and get the weight
+- `get_neighbours(i)` - Get all the neighbours of a node `i`
+- `in_degree(i)` - No. of edges that point to this node (end at this node)
+- `out_degree(i)` - No. of edges that go out (also the number of neighbours)
+
+The edges can be represented as:
+Adjacency Matrix - 2D, V by V matrix where true/1 represents an edge,
+Adjacency List - An array of V entries, each index $i$ represents edges going out from node $i$ to any other nodes,
+Edge List - Just an array of all edges as pairs `(i, j)`
+
+#image("assets/graph-edges.png", width: 90%)
+
+== Types of Graphs
+
+Tree:
+A connected and cycle-free graph.
+Could be directed or undirected(in concept, but any edge would then cause a cycle).
+Usually also has a root.
+Multiple disjoint trees are a forest.
+Only has 1 path between any pair of nodes.
+
+Cycles:
+If a graph has a cycle, there is a path of `len >= 3` such that you can reach a node in the path again/a node is repeated.
+
+DAG: Directed, acyclic
+
+Complete Graph: Every node has a edge to every other node, $V(V-1)/2 = O(V^2)$ edges.
+
+Connected: There is a path between every pair of $s,d$ vertex in the graph
+
+
+== DFS & BFS
+
+#strong[DFS]:
+Remember about a visited array, and its usually done recursively.
+Can use a stack to do it iteratively.
+#strong[TC]: $O(V+E)$, $V$ for visited array and $E$ potentially iterating over all edges.
+#strong[Space]: $O(V+E)$, for the visited array and potentially $E$ recursive calls.
+
+#strong[BFS]:
+Also have a visited array.
+Use a queue to enqeue neighbours.
+#strong[TC]: $O(V+E)$
+#strong[TC]: $O(V+E)$
+Same as DFS
+
+Common Problems: Path from s to t, counting no. of connected components
+
+Cycle Detection in undirected: Needs a `visited_from` array.
+
+Cycle Detection in directed: Use an array to track if a node is in the stack. If we visit a node in our current stack, we have a cycle.
+
+Toposort: DFS with a linked-list, pre-pending the current node after recursing on all neighbours.
+
+== SSSP
+
+For the undirected case, if we have an edge with negative weight, we have a negative weight cycle.
+
+Unweighted:
+BFS, keeping track of the distance to each node, return the distance the first time we reach the final node.
+In the case of un/directed, mark a node visited before pushing its neighbours, always taken `min` and have to finish iterating through all edges.
+
+#strong[TC]: $O(V+E)$ #strong[Space]: $O(V+E)$
+
+DAG with negative weights (no cycle):
+Toposort from source node, then relax all the edges in the toposort order.
+
+#strong[TC]: $O(V+E)$ #strong[Space]: $O(V + E)$
+
+Directed, with negative weights:
+Bellman-Ford, run relaxations $V-1$ times.
+Run relaxation 1 more time, if any distances decrease, there is a negative cycle.
+
+#strong[TC]: $O(V E)$ #strong[Space]: $O(V)$
+
+Directed, non-negative weights (0 is fine):
+Dijkstra, with a pq.
+There is an optimization with 0-1 BFS if its only 2 values.
+
+#strong[TC]: $O(V+E log E) = O(E log V)$ #strong[Space]: $O(V+E)$
+
+=== Extra
+
+We can run SSSP from `src` to `dest` and `dest` to `src` reversing all the edges.
+This way we can check if an edge is on the SSSP with `dist[i] + w + res_dist[j] == dist[dest]`.
+This represents from `src` to any node `i` then taking edge `w` to `j`, then `j` to `dest`.
+
+== UFDS
+
+Needs path compression and by-rank.
+
+`union(x, y)` - Places `x` and `y` in the same set
+#strong[TC]: $O(alpha(n)) = O(1)$
+
+`is_same_set(x, y)` - Check if `x` and `y` are in the same set
+#strong[TC]: $O(alpha(n)) = O(1)$
+
+
+== MST
+
+Kruskal:
+Sort the edge list, then use UFDS to try and add an edge to the final MST.
+If the edge joins 2 nodes that are already in the same set, ignore it.
+
+#strong[TC]: $O(E log E)$ for sorting the edge list. #strong[Space]: $O(V)$ for storing the MST edge list.
+
+Prims:
+Have an in-tree array and a pq.
+Starting on node `s`, add all edges into the pq.
+Extract min, check if both `src` and `next` nodes are already in-tree to skip.
+
+#strong[TC]: $O(E log E)$ since we iterate through all edges, adding it into the pq. #strong[Space]: $O(E + V)$ for the pq and in-tree array.
+
+== Floyd-Warshall
+
+For solving APSP, with the idea to keep a `dist[][]` matrix checking for all $V$ if `min(dist[i][j], dist[i][A] + dist[A][j])`.
+If its shorter to go through all intermediary nodes, we take it.
+#strong[TC]: $O(V^3)$
+
+We can also run dijkstra $V$ times for $O(V E log V)$ which could be worse on dense graphs.
+
+= Max Queue with add_all
+
+Made using 2 Max-Stacks, `queue` and `dequeue`.
+Inserts is value: `key - addToAll`.
+
+Operations:
+enqueue, dequeue, get_max/min, add_to_all - in amortized $O(1)$,
+
+== Max Stack
+
+Every time we insert into stack, we push a pair of values, `(original, max/min(original, peek()))`.
+`peek()` the top of the stack to get the max/min in the stack.
+
+= DP
+
+For solution recovery, just have another state space storing the where we "came from", which current state we are to move to the next state.
+
+Common recurrences:
+- LIS - Consider all sub-problems before and somehow using current index to add on to any of them
+- LCS, Edit Distance - Consider doing any of the actions possible, also consider increasing the value with a check of the last index
+- Use better DS to cut down the TC of each sub-problem
+- Pizza Party - Solution space to encode the WLOG difference of A and B, keeping max of taking values
+
+== Longest Increasing Subsequence
+
+We have $O(n)$ states, think of sub-problem of LIS ending at this index.
+So we just need to find max of all previous index we can add onto.
+#strong[TC]: $O(n^2)$
+
+== Knapsack
+
+Original is 0/1 Kanpsack.
+Choice from $n$ items, with a weight and value, $(w_i, v_i)$
+We can only take up till capacity $C$ of weight.
+Recurrance is either taking an item reducing weight and increasing value, or not taking it.
+#strong[TC]: $O(n C)$, with $n$ items and $C$ possible states per.
+
+=== Bounded Kanpsack
+
+We build each row of the solution space, considering using taking the current item $C/w$ time for all possible $C%w$, $W$ times.
+This means we only calculate $C$ times per row with each state taking $O(1)$ time.
+With $O(n C)$ states, it takes $O(n C)$
+
+=== Unbounded Knapsack
+
+Change the recurrance to consider taking one of the current items if possible (keeping $n$, take $C-W[n]$), or not taking this current item (do $n-1$, keeping $C$)
+
+= Binary Search
 
 Binary search O(log n) \
 Precondition: array is of size 𝒏, array is sorted \
@@ -352,16 +591,16 @@ while low + 1 < high:
   return mid
 ```
 
-== Additional
+= Additional
 
 - Make sorting stable by using an additional array to track original indices… take O(n) space
 - Use a stack to make recursion iterative, e.g. reversing a linked list
 
-Thins we can also use: \
+Things we can also use: \
 - stack and queues
 - linked list, doublely linked list
 - tries, scapegoat tree, kd-tree
 - Priority Queue using a heap
 
-#image("assets/order.png")
-#image("assets/kd-tree.png")
+#image("assets/order.png", width: 80%)
+#image("assets/kd-tree.png", width: 80%)
